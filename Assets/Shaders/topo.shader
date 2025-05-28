@@ -5,7 +5,9 @@ Shader "Unlit/topo"
         _MinY ("Minimum Y", Float) = 0
         _MaxY ("Maximum Y", Float) = 1
         _RampTex ("Ramp Texture", 2D) = "white" {}
-        _BandCnt ("Band count", int) = 5
+        _BandCnt ("Band count", Float) = 5
+        _BandCntMin ("Band Count Min", Float) = 1
+        _BandCntMax ("Band Count Max", Float) = 20
     }
     SubShader
     {
@@ -40,7 +42,7 @@ Shader "Unlit/topo"
             float _MaxY;
             sampler2D _RampTex;
             float4 _RampTex_ST;
-            int _BandCnt;
+            float _BandCnt;
 
             v2f vert (appdata v)
             {
@@ -59,7 +61,9 @@ Shader "Unlit/topo"
             {
                 fixed u = (i.wPos.y - _MinY) / (_MaxY - _MinY);
                 u = saturate(u);
-                u = floor(u * _BandCnt) / _BandCnt; // Seperate into bands
+                
+                int bandCount = (int)_BandCnt;
+                u = floor(u * bandCount) / bandCount;   // Seperate into bands
 
                 // sample the texture using the u value
                 // I think this is like Texture2D() in glsl
