@@ -72,4 +72,5 @@ Shader "Unlit/topo"
             ENDCG
         }
     }
+    CustomEditor "TopoShaderGUI"
 }
