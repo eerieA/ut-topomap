@@ -2,11 +2,14 @@ Shader "Unlit/topo"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MinY ("Minimum Y", Float) = 0
+        _MaxY ("Maximum Y", Float) = 1
+        _RampTex ("Ramp Texture", 2D) = "white" {}
+        _BandCnt ("Band count", int) = 5
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType" = "Opaque" }
         LOD 100
 
         Pass
@@ -30,28 +33,41 @@ Shader "Unlit/topo"
                 float2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
+                float3 wPos : TEXCOORD1; // Will use this to store world pos
             };
-
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
+            
+            float _MinY;
+            float _MaxY;
+            sampler2D _RampTex;
+            float4 _RampTex_ST;
+            int _BandCnt;
 
             v2f vert (appdata v)
             {
                 v2f o;
+
+                // I think this is like the out keyword in glsl
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
+                o.uv = TRANSFORM_TEX(v.uv, _RampTex);
+                UNITY_TRANSFER_FOG(o, o.vertex);
+                o.wPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
-                // fixed4 col = fixed4(1.0, 0.533, 0.0, 1.0); // a hardcoded color
-                // apply fog
-                UNITY_APPLY_FOG(i.fogCoord, col);
+                fixed u = (i.wPos.y - _MinY) / (_MaxY - _MinY);
+                u = saturate(u);
+                u = floor(u * _BandCnt) / _BandCnt; // Seperate into bands
+
+                // sample the texture using the u value
+                // I think this is like Texture2D() in glsl
+                fixed4 col = tex2D(_RampTex, fixed2(u, 0.5));
+
+                // like older gl_FragColor in glsl
                 return col;
+                // return fixed4(u, 0, 0, 1);   // DEBUG
             }
             ENDCG
         }
