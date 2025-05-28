@@ -4,5 +4,6 @@
 
 ## Tweaks
 
-- Used a continous (sort of) ramp texture and calculated the banding.
-- Added a band number slider.
+- Used a continous (sort of) ramp texture and calculated the banding in shader.
+- Added a band number slider, which is an int slider using custom ShaderGUI.  
+    *(This is not at all necessary for the shader to work. XD)*
