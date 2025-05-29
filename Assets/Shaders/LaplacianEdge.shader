@@ -5,6 +5,8 @@ Shader "Custom/LaplacianEdge"
         _MainTex ("Base (RGB)", 2D) = "white" {}
         _ThresholdMin ("Threshold Min", Range(0, 0.2)) = 0.05
         _ThresholdMax ("Threshold Max", Range(0, 0.2)) = 0.15
+        _ColorBg ("Background Color", Color) = (0.5, 0.5, 0.5, 1)
+        _ColorLine ("Line Color", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -23,6 +25,8 @@ Shader "Custom/LaplacianEdge"
             float4 _MainTex_TexelSize;
             float _ThresholdMin;
             float _ThresholdMax;
+            fixed4 _ColorBg;
+            fixed4 _ColorLine;
 
             struct appdata
             {
@@ -65,7 +69,8 @@ Shader "Custom/LaplacianEdge"
                 float laplacian = saturate(lumN + lumS + lumW + lumE - 4.0 * lumC);
                 laplacian = smoothstep(_ThresholdMin, _ThresholdMax, laplacian);
 
-                return fixed4(laplacian, laplacian, laplacian, 1.0);
+                fixed3 color = lerp(_ColorBg.rgb, _ColorLine.rgb, laplacian);
+                return fixed4(color, 1.0);
             }
             ENDCG
         }
